@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StreamVibe — Movies, Shows & Live Streams</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">▶ Stream<span>Vibe</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+      <nav class="nav-menu" id="navMenu">
+        <a href="index.html" class="active">Home</a>
+        <a href="index.html#browse">Categories</a>
+        <a href="watchlist.html">My List <span class="count" id="wlCount">0</span></a>
+        <a href="upload.html">Upload</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+      <div class="nav-right">
+        <input type="search" id="searchInput" class="search" placeholder="Search titles, genres…">
+        <div id="userArea"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-content">
+      <span class="hero-tag" id="heroTag">FEATURED</span>
+      <h1 id="heroTitle">Loading…</h1>
+      <p id="heroDesc"></p>
+      <div class="hero-meta" id="heroMeta"></div>
+      <div class="hero-btns">
+        <a class="btn btn-primary" id="heroPlay" href="#">▶ Play</a>
+        <button class="btn btn-ghost wl-btn" id="heroWl" data-id="">+ Watchlist</button>
+      </div>
+      <div class="hero-dots" id="heroDots"></div>
+    </div>
+  </section>
+
+  <!-- CATEGORIES / BROWSE -->
+  <main id="browse">
+    <section class="section">
+      <div class="section-head">
+        <h2>Browse by category</h2>
+      </div>
+      <div class="chips" id="chips">
+        <button class="chip active" data-cat="All">All</button>
+        <button class="chip" data-cat="Movies">Movies</button>
+        <button class="chip" data-cat="TV Shows">TV Shows</button>
+        <button class="chip" data-cat="Live">Live</button>
+        <button class="chip" data-cat="Documentaries">Documentaries</button>
+        <button class="chip" data-cat="Kids">Kids</button>
+      </div>
+      <div class="grid" id="grid"></div>
+      <p class="empty" id="noResults" hidden>No titles match your search.</p>
+    </section>
+
+    <section class="section" id="trendingSection">
+      <div class="section-head"><h2>🔥 Trending now</h2></div>
+      <div class="grid grid-row" id="trendingRow"></div>
+    </section>
+
+    <section class="section" id="recoSection">
+      <div class="section-head"><h2>✨ Recommended for you</h2></div>
+      <p class="muted" id="recoNote"></p>
+      <div class="grid grid-row" id="recoRow"></div>
+    </section>
+
+    <section class="section" id="liveSection">
+      <div class="section-head"><h2>📡 Live now</h2></div>
+      <div class="grid grid-row" id="liveRow"></div>
+    </section>
+
+    <!-- SUBSCRIPTION PLANS -->
+    <section class="section plans" id="plans">
+      <div class="section-head"><h2>Choose your plan</h2></div>
+      <div class="plan-grid" id="planGrid"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>StreamVibe — FEDF course project. Demo content from public test streams.</p>
+    <p class="muted">Movies • TV Shows • Live • Documentaries • Kids</p>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
