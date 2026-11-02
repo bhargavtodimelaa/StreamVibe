@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My List — StreamVibe</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">▶ Stream<span>Vibe</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+      <nav class="nav-menu" id="navMenu">
+        <a href="index.html">Home</a>
+        <a href="index.html#browse">Categories</a>
+        <a href="watchlist.html" class="active">My List <span class="count" id="wlCount">0</span></a>
+        <a href="upload.html">Upload</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+      <div class="nav-right"><div id="userArea"></div></div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="section">
+      <div class="section-head">
+        <h2>❤️ My Watchlist</h2>
+        <button class="btn btn-ghost btn-mini" id="clearWl">Clear list</button>
+      </div>
+      <div class="grid" id="wlGrid"></div>
+      <p class="empty" id="wlEmpty" hidden>Your watchlist is empty. Browse the home page and tap “+ Watchlist”.</p>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>🕘 Continue watching</h2>
+        <button class="btn btn-ghost btn-mini" id="clearHist">Clear history</button>
+      </div>
+      <div class="grid" id="histGrid"></div>
+      <p class="empty" id="histEmpty" hidden>Nothing watched yet.</p>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>⚙ Parental controls</h2></div>
+      <div class="panel">
+        <p class="muted">One PIN is used for every video (default <strong>1234</strong>). The PIN is asked only for titles an administrator marked as <strong>protected</strong> in the admin panel — everything else plays directly.</p>
+        <div class="hint-box">💡 Demo PIN: <strong>1234</strong> (change it below)</div>
+        <p class="muted">PIN: <strong id="pinStatus"></strong> — unlocking lasts for the current page view only.</p>
+        <h4 class="panel-sub">🔒 Protected titles</h4>
+        <ul class="protected-list" id="protectedList"></ul>
+        <div class="panel-actions">
+          <button class="btn btn-primary" id="changePin">Set / change PIN</button>
+          <button class="btn btn-ghost" id="resetParental">Reset PIN &amp; protections</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><p>StreamVibe — FEDF course project.</p></footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/watchlist.js"></script>
+</body>
+</html>

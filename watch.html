@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch — StreamVibe</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">▶ Stream<span>Vibe</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+      <nav class="nav-menu" id="navMenu">
+        <a href="index.html">Home</a>
+        <a href="index.html#browse">Categories</a>
+        <a href="watchlist.html">My List <span class="count" id="wlCount">0</span></a>
+        <a href="upload.html">Upload</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+      <div class="nav-right">
+        <div id="userArea"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="watch-page">
+    <!-- PLAYER -->
+    <section class="player-wrap">
+      <div class="player-box">
+        <div class="lock-screen" id="lockScreen" hidden>
+          <div class="lock-card">
+            <div class="lock-icon">🔒</div>
+            <h2>Age-restricted content</h2>
+            <p>This title is rated <strong id="lockRating"></strong>. Enter the parental PIN to continue.</p>
+            <p class="hint-box" id="pinHint" hidden></p>
+            <button class="btn btn-primary" id="unlockBtn">Enter PIN</button>
+          </div>
+        </div>
+
+        <video id="player" controls playsinline poster=""></video>
+
+        <div class="player-bar">
+          <div class="quality">
+            <button class="btn btn-ghost btn-mini" id="qualityBtn">⚙ Quality: <strong id="qualityLabel">Auto</strong></button>
+            <div class="quality-menu" id="qualityMenu" hidden></div>
+          </div>
+          <span class="stream-info" id="streamInfo"></span>
+        </div>
+      </div>
+
+      <div class="watch-info">
+        <div class="watch-head">
+          <h1 id="wTitle">…</h1>
+          <span class="badge live" id="wLive" hidden>● LIVE</span>
+        </div>
+        <p class="card-meta" id="wMeta"></p>
+        <p class="watch-desc" id="wDesc"></p>
+
+        <div class="watch-actions">
+          <button class="btn btn-primary" id="playBig">▶ Play</button>
+          <button class="btn btn-ghost wl-btn" id="wWl" data-id="">+ Watchlist</button>
+          <button class="btn btn-ghost" id="shareBtn">⤴ Share</button>
+          <span class="resume-note" id="resumeNote" hidden></span>
+        </div>
+
+        <div class="up-next" id="upNext" hidden>
+          <h3>Autoplay up next in <span id="countdown">10</span>s</h3>
+          <div class="up-next-card" id="upNextCard"></div>
+          <div class="up-next-actions">
+            <button class="btn btn-primary" id="playNext">Play now</button>
+            <button class="btn btn-ghost" id="cancelNext">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RELATED -->
+    <section class="section">
+      <div class="section-head"><h2>More like this</h2></div>
+      <div class="grid grid-row" id="relatedRow"></div>
+    </section>
+
+    <!-- EPISODES / DETAILS -->
+    <section class="section" id="detailsSection">
+      <div class="section-head"><h2>Details</h2></div>
+      <table class="detail-table" id="detailTable"></table>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>StreamVibe — FEDF course project.</p>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/watch.js"></script>
+</body>
+</html>

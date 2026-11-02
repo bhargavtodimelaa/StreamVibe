@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — StreamVibe</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">▶ Stream<span>Vibe</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+      <nav class="nav-menu" id="navMenu">
+        <a href="index.html">Home</a>
+        <a href="index.html#browse">Categories</a>
+        <a href="watchlist.html">My List <span class="count" id="wlCount">0</span></a>
+        <a href="upload.html">Upload</a>
+        <a href="admin.html" class="active">Admin</a>
+      </nav>
+      <div class="nav-right"><div id="userArea"></div></div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="section">
+      <div class="section-head"><h2>🛡 Admin dashboard</h2></div>
+      <div class="stat-grid" id="statGrid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>📝 Uploads awaiting review</h2>
+      </div>
+      <div id="reviewList"></div>
+      <p class="empty" id="reviewEmpty">No pending uploads.</p>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>🎬 Content management</h2>
+        <input type="search" class="search" id="adminSearch" placeholder="Filter titles…">
+      </div>
+      <div class="table-wrap">
+        <table class="admin-table" id="contentTable">
+          <thead>
+            <tr>
+              <th>Title</th><th>Category</th><th>Rating</th><th>Year</th><th>Views</th><th>Flags</th><th>Parental</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="empty" id="contentEmpty" hidden>No titles match.</p>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>👥 Users & subscriptions</h2></div>
+      <p class="muted">Deactivating a user makes them pick a plan before they can watch again.</p>
+      <div class="table-wrap">
+        <table class="admin-table" id="userTable">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Plan</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>🔐 Parental PIN (all videos)</h2></div>
+      <div class="panel">
+        <p class="muted">One PIN protects every title marked <strong>🔒 PIN</strong> in the content table above.
+        Current PIN: <strong id="currentPin">…</strong></p>
+        <div class="field-row">
+          <label>Set a custom PIN (4–6 digits)
+            <input type="password" id="newPinInput" inputmode="numeric" maxlength="6" placeholder="e.g. 5678">
+          </label>
+          <label>Confirm PIN
+            <input type="password" id="newPinInput2" inputmode="numeric" maxlength="6" placeholder="repeat it">
+          </label>
+        </div>
+        <p class="error" id="pinErr" hidden></p>
+        <div class="panel-actions">
+          <button class="btn btn-primary" id="savePinBtn">Save custom PIN</button>
+          <button class="btn btn-ghost" id="resetPinBtn">Reset to 1234</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>💳 Subscription plans</h2></div>
+      <div class="plan-grid" id="planAdmin"></div>
+    </section>
+  </main>
+
+  <footer class="footer"><p>StreamVibe — FEDF course project.</p></footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

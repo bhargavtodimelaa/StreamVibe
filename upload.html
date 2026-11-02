@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload — StreamVibe</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">▶ Stream<span>Vibe</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+      <nav class="nav-menu" id="navMenu">
+        <a href="index.html">Home</a>
+        <a href="index.html#browse">Categories</a>
+        <a href="watchlist.html">My List <span class="count" id="wlCount">0</span></a>
+        <a href="upload.html" class="active">Upload</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+      <div class="nav-right"><div id="userArea"></div></div>
+    </div>
+  </header>
+
+  <main class="page page-split">
+    <!-- UPLOAD FORM -->
+    <section class="panel form-panel">
+      <div class="section-head"><h2>🎬 Upload a video</h2></div>
+      <p class="muted">For content creators. Videos are transcoded to adaptive quality automatically after upload.</p>
+
+      <form id="uploadForm" novalidate>
+        <label>Title *
+          <input type="text" name="title" id="fTitle" required placeholder="e.g. My Great Short Film">
+        </label>
+
+        <label>Description *
+          <textarea name="desc" id="fDesc" rows="3" required placeholder="What is this video about?"></textarea>
+        </label>
+
+        <div class="field-row">
+          <label>Category *
+            <select name="category" id="fCat" required>
+              <option value="">Select…</option>
+              <option>Movies</option>
+              <option>TV Shows</option>
+              <option>Live</option>
+              <option>Documentaries</option>
+              <option>Kids</option>
+            </select>
+          </label>
+          <label>Genre *
+            <input type="text" name="genre" id="fGenre" required placeholder="e.g. Drama">
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label>Content rating *
+            <select name="rating" id="fRating" required>
+              <option>G</option>
+              <option>PG</option>
+              <option>PG-13</option>
+              <option>R</option>
+            </select>
+          </label>
+          <label>Release year *
+            <input type="number" name="year" id="fYear" min="1900" max="2100" value="2026" required>
+          </label>
+        </div>
+
+        <!-- MEDIA PICKER: gallery / PC file -->
+        <label>Video file from your gallery / PC *</label>
+        <div class="file-drop" id="fileDrop">
+          <input type="file" id="fFile" accept="video/*" hidden>
+          <div class="file-drop-inner">
+            <span class="file-icon">🎞️</span>
+            <p><strong>Click “Browse media” or drag &amp; drop a video here</strong></p>
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary btn-mini" id="pickFile">Browse media…</button>
+              <button type="button" class="btn btn-ghost btn-mini" id="clearFile" hidden>Remove file</button>
+            </div>
+          </div>
+          <p class="file-meta muted" id="fileMeta">No file selected</p>
+        </div>
+        <video id="filePreview" class="file-preview" controls hidden></video>
+
+        <div class="field-row">
+          <label>…or paste a video URL
+            <input type="url" name="src" id="fSrc" placeholder="https://…/video.mp4">
+          </label>
+          <label>…or paste a thumbnail URL
+            <input type="url" name="thumb" id="fThumbUrl" placeholder="https://…/thumb.jpg">
+          </label>
+        </div>
+
+        <label class="check">Thumbnail image from your PC (optional — otherwise a frame from the video is used)
+          <input type="file" id="fThumbFile" accept="image/*">
+        </label>
+
+        <label class="check">
+          <input type="checkbox" id="fLive"> This is a live stream (HLS .m3u8 source)
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Upload</button>
+          <button type="reset" class="btn btn-ghost">Reset</button>
+        </div>
+        <p class="error" id="formError" hidden>Please fill in all required fields — and pick a video file or paste a URL.</p>
+      </form>
+    </section>
+
+    <!-- MY UPLOADS -->
+    <section class="panel">
+      <div class="section-head">
+        <h2>📁 My uploads</h2>
+        <span class="badge" id="uploadCount">0</span>
+      </div>
+      <div class="upload-list" id="uploadList"></div>
+      <p class="empty" id="uploadEmpty">You haven't uploaded anything yet.</p>
+
+      <div class="panel section-head" style="margin-top:1.5rem">
+        <h2>📊 Creator stats</h2>
+      </div>
+      <table class="detail-table" id="statsTable"></table>
+    </section>
+  </main>
+
+  <footer class="footer"><p>StreamVibe — FEDF course project.</p></footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/upload.js"></script>
+</body>
+</html>
