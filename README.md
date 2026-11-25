@@ -8,7 +8,14 @@ A front-end project (FEDF subject) built with **plain HTML, CSS and JavaScript**
 
 ## 🚀 Run it
 
-Just open `index.html` in a browser (or serve the folder with `npx serve` / VS Code Live Server).
+Serve the folder from **one fixed address** and always use that same URL — e.g.
+
+```bash
+python -m http.server 3000     # → http://localhost:3000
+# or: npx serve . --listen 3000
+```
+
+Accounts, watchlist, history and uploaded files are stored in this browser's `localStorage` / `IndexedDB`, so `http://localhost:3000`, `http://127.0.0.1:3000`, another port, and `file://` are **separate storage silos**. Uploads are saved in IndexedDB (high quota); opening the HTML directly as a file falls back to `localStorage` and only holds ~4 MB. The app asks the browser for persistent storage so uploads aren't evicted automatically; clearing site data / Incognito still deletes them.
 
 ## 🔐 Demo credentials & hints
 

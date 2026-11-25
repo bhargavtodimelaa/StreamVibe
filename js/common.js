@@ -198,6 +198,20 @@ const MediaStore = (() => {
   return { put, getURL, remove };
 })();
 
+/* ---------- Ask the browser to keep our stored uploads ----------
+   Without this, IndexedDB data is "best effort" and can be evicted
+   under disk pressure. Call it from a user gesture (upload submit)
+   for the best chance of a grant. */
+async function requestPersistentStorage() {
+  try {
+    if (!navigator.storage || !navigator.storage.persist) return null;
+    if (navigator.storage.persisted && await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  } catch (e) {
+    return null;
+  }
+}
+
 /* ============================================================
    Auth - users are stored in localStorage (sv_users),
    the signed-in session is stored in sv_user
@@ -285,7 +299,20 @@ function isAdmin() {
   return Auth.users().some((x) => x.email === u.email && x.role === "admin");
 }
 
+function isCreator() {
+  const u = Auth.current();
+  if (!u || u.role !== "creator") return false;
+  // session must match a real creator account stored in localStorage
+  return Auth.users().some((x) => x.email === u.email && x.role === "creator");
+}
+
 /* ---------- Rendering helpers ---------- */
+// "12.4M" -> "12.4M views", but never "1.2M watching views"
+function viewsLabel(video) {
+  const v = String(video.views === undefined || video.views === null ? "0" : video.views);
+  return /view|watch/i.test(v) ? v : `${v} views`;
+}
+
 function statusBadge(video) {
   if (video.isLive) return '<span class="badge live">● LIVE</span>';
   if (video.isNew) return '<span class="badge new">NEW</span>';
@@ -312,7 +339,7 @@ function videoCard(video) {
           <button class="btn btn-mini wl-btn" data-id="${video.id}">
             ${inList ? "✓ In List" : "+ Watchlist"}
           </button>
-          <span class="views">${video.views} views</span>
+          <span class="views">${viewsLabel(video)}</span>
         </div>
       </div>
     </article>`;
@@ -327,14 +354,27 @@ function renderRow(container, videos, emptyMsg) {
   container.innerHTML = videos.map(videoCard).join("");
 }
 
+// Keep every watchlist button (cards, hero, player) and the nav count in sync
+function syncWatchlistUI() {
+  document.querySelectorAll(".wl-btn").forEach((btn) => {
+    if (!btn.dataset.id) return;
+    const inList = Watchlist.has(btn.dataset.id);
+    btn.classList.toggle("active", inList);
+    btn.innerHTML = inList ? "✓ In List" : "+ Watchlist";
+  });
+  const counter = document.getElementById("wlCount");
+  if (counter) counter.textContent = Watchlist.all().length;
+}
+
 // Delegate watchlist button clicks anywhere on the page
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".wl-btn");
-  if (!btn) return;
+  if (!btn || !btn.dataset.id) return;
   e.preventDefault();
   const added = Watchlist.toggle(btn.dataset.id);
-  btn.classList.toggle("active", added);
-  btn.innerHTML = added ? "✓ In List" : "+ Watchlist";
+  syncWatchlistUI();
+  // let the current page refresh cards built from the list
+  window.dispatchEvent(new CustomEvent("svwatchlistchange"));
   showToast(added ? "Added to your watchlist" : "Removed from watchlist");
 });
 
@@ -439,6 +479,7 @@ function openAuthGate(opts = {}) {
   const done = (user) => {
     modal.remove();
     initNav();
+    window.dispatchEvent(new CustomEvent("svauthchange", { detail: user }));
     showToast(`Welcome, ${user.name} (${user.role})`);
     // if this account was deactivated, send it straight to the plan wall
     enforceAccess();
@@ -519,7 +560,8 @@ function openAdminLogin(onSuccess) {
   const err = modal.querySelector("#adminErr");
 
   modal.querySelector("#adminCreate").addEventListener("click", () => {
-    openAuthGate({ tab: "signup", force: false, onSuccess });
+    close();  // don't leave the admin modal stacked behind the auth gate
+    openAuthGate({ tab: "signup", force: true, onSuccess });
   });
 
   const submit = () => {
@@ -584,7 +626,9 @@ function showSubscribeWall() {
 function initNav() {
   const burger = document.querySelector(".nav-toggle");
   const menu = document.getElementById("navMenu");
-  if (burger && menu) {
+  // initNav runs again after log in, so only bind the menu toggle once
+  if (burger && menu && !burger.dataset.bound) {
+    burger.dataset.bound = "1";
     burger.addEventListener("click", () => menu.classList.toggle("open"));
   }
 
@@ -610,8 +654,23 @@ function initNav() {
   const wlCount = document.getElementById("wlCount");
   if (wlCount) wlCount.textContent = Watchlist.all().length;
 
+  // Uploading is a creator-only tool: viewers and admins never see the link
+  const creator = isCreator();
+  document.querySelectorAll('a[href="upload.html"]').forEach((link) => {
+    link.hidden = !creator;
+    if (link.dataset.uploadBound) return;
+    link.dataset.uploadBound = "1";
+    link.addEventListener("click", (e) => {
+      if (isCreator()) return;
+      e.preventDefault();
+      showToast("Uploading is available to content creators only");
+    });
+  });
+
   // Admin links require an admin login first
   document.querySelectorAll('a[href="admin.html"]').forEach((link) => {
+    if (link.dataset.adminBound) return;
+    link.dataset.adminBound = "1";
     link.addEventListener("click", (e) => {
       if (!isAdmin()) {
         e.preventDefault();
@@ -672,6 +731,9 @@ function askPin(callback) {
 (function mergeUploads() {
   if (typeof CATALOGUE === "undefined") return;
   Store.get("sv_extra_videos", []).forEach((v) => {
+    // Only approved uploads belong in the public catalogue; pending ones
+    // stay viewable from the creator page but are not listed on the site.
+    if (v.status === "Pending review") return;
     if (!CATALOGUE.find((x) => x.id === v.id)) CATALOGUE.push(v);
   });
 
@@ -712,6 +774,7 @@ function enforceAccess() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  requestPersistentStorage();   // keep uploads/history from being evicted
   initNav();
   if (!Auth.current()) {
     openAuthGate({ tab: "login", force: true });

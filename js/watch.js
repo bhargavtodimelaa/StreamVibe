@@ -9,12 +9,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const player = $("player");
 
   const params = new URLSearchParams(location.search);
-  const video = CATALOGUE.find((v) => v.id === params.get("id")) || CATALOGUE[0];
+  const requestedId = params.get("id");
+  // Approved titles live in CATALOGUE; a creator can still preview their own
+  // pending upload through its id.
+  const video = CATALOGUE.find((v) => v.id === requestedId)
+    || Store.get("sv_extra_videos", []).find((v) => v.id === requestedId)
+    || CATALOGUE[0];
 
   /* ---------- Page info ---------- */
   document.title = `${video.title} — StreamVibe`;
   $("wTitle").textContent = video.title;
-  $("wMeta").textContent = `${video.year} • ${video.category} • ${video.genre} • ${video.duration} • ${video.rating} • ${video.views} views`;
+  $("wMeta").textContent = `${video.year} • ${video.category} • ${video.genre} • ${video.duration} • ${video.rating} • ${viewsLabel(video)}`;
   $("wDesc").textContent = video.desc;
   $("wLive").hidden = !video.isLive;
   player.poster = video.thumb;
@@ -59,10 +64,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function loadSource() {
     if (video.hasMedia && !video.src) {
       $("streamInfo").textContent = "Loading file from browser storage…";
-      mediaReady.then(() => {
-        if (video.src) playLocal();
-        else $("streamInfo").textContent = "Uploaded file not found — upload it again.";
-      });
+      mediaReady
+        .then(() => MediaStore.getURL(video.id))
+        .then((url) => { if (url) video.src = url; })
+        .catch(() => {})
+        .then(() => {
+          if (video.src) playLocal();
+          else $("streamInfo").textContent = "Uploaded file not found — upload it again.";
+        });
       return;
     }
     playLocal();
@@ -89,7 +98,19 @@ document.addEventListener("DOMContentLoaded", () => {
           buildQualityMenu();
         });
         hls.on(window.Hls.Events.ERROR, (_, data) => {
-          if (data.fatal) $("streamInfo").textContent = "Stream error — tap retry";
+          if (!data.fatal) return;
+          // Recover from transient network / decoding problems instead of dying
+          if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR) {
+            $("streamInfo").textContent = "Network issue — retrying stream…";
+            hls.startLoad();
+          } else if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) {
+            $("streamInfo").textContent = "Media error — recovering…";
+            hls.recoverMediaError();
+          } else {
+            $("streamInfo").textContent = "Stream error — this source can't be played";
+            hls.destroy();
+            hls = null;
+          }
         });
       } else {
         $("streamInfo").textContent = "HLS not supported in this browser";

@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
       { label: "Active subscriptions", value: Subs.activeCount(allUserRows().map((u) => u.email)), icon: "✅" },
       { label: "Subscribers", value: totalSubs.toLocaleString(), icon: "👥" },
       { label: "Active plans", value: subs.length, icon: "💳" },
-      { label: "Registered users", value: USERS.length, icon: "🪪" }
+      { label: "Registered users", value: allUserRows().length, icon: "🪪" }
     ];
 
     $("statGrid").innerHTML = stats.map((s) => `

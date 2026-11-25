@@ -9,25 +9,35 @@ document.addEventListener("DOMContentLoaded", () => {
     return ids.map((id) => CATALOGUE.find((v) => v.id === id)).filter(Boolean);
   }
 
+  // "9:56" / "1:02:03" -> seconds (0 when unknown, e.g. "LIVE" or "—")
+  function durationSeconds(video) {
+    const parts = String(video.duration || "").split(":").map(Number);
+    if (!parts.length || parts.some((n) => Number.isNaN(n))) return 0;
+    return parts.reduce((total, n) => total * 60 + n, 0);
+  }
+
   function renderAll() {
     const wl = byIds(Watchlist.all());
-    renderRow($("wlGrid"), wl, "");
+    if (wl.length) renderRow($("wlGrid"), wl);
+    else $("wlGrid").innerHTML = "";
     $("wlEmpty").hidden = wl.length > 0;
     $("wlCount").textContent = wl.length;
 
     const hist = byIds(History.all());
-    renderRow($("histGrid"), hist, "");
+    if (hist.length) renderRow($("histGrid"), hist);
+    else $("histGrid").innerHTML = "";
     $("histEmpty").hidden = hist.length > 0;
 
     // Progress bars on history cards
     hist.forEach((v) => {
       const p = Progress.get(v.id);
-      if (p > 5) {
+      const total = durationSeconds(v);
+      if (p > 5 && total > 0) {
         const card = $("histGrid").querySelector(`[data-id="${v.id}"] .card-media`);
         if (card && !card.querySelector(".progress")) {
           const bar = document.createElement("div");
           bar.className = "progress";
-          bar.innerHTML = `<span style="width:${Math.min(100, p / 8)}%"></span>`;
+          bar.innerHTML = `<span style="width:${Math.min(100, (p / total) * 100)}%"></span>`;
           card.appendChild(bar);
         }
       }
@@ -35,6 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   renderAll();
+
+  // Removing a title with its card button should drop the card immediately
+  window.addEventListener("svwatchlistchange", () => setTimeout(renderAll, 0));
 
   $("clearWl").addEventListener("click", () => {
     Watchlist.clear();

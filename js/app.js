@@ -7,7 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const $ = (id) => document.getElementById(id);
 
   /* ---------- Hero (auto-rotating featured titles) ---------- */
-  const featured = CATALOGUE.filter((v) => v.featured);
+  // Fall back to the first titles when every title was un-featured in the admin panel
+  let featured = CATALOGUE.filter((v) => v.featured);
+  if (!featured.length) featured = CATALOGUE.slice(0, 3);
   let heroIndex = 0;
 
   function showHero(video) {
@@ -18,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("heroTag").textContent = video.isLive ? "● LIVE NOW" : "FEATURED";
     $("heroTag").classList.toggle("live-tag", !!video.isLive);
     $("heroMeta").innerHTML =
-      `<span class="badge rating">${video.rating}</span> ${video.year} • ${video.genre} • ${video.duration} • ${video.views} views`;
+      `<span class="badge rating">${video.rating}</span> ${video.year} • ${video.genre} • ${video.duration} • ${viewsLabel(video)}`;
     $("heroPlay").href = `watch.html?id=${video.id}`;
     const wl = $("heroWl");
     wl.dataset.id = video.id;
@@ -130,28 +132,33 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("pageshow", recommendations);
 
   /* ---------- Subscription plans ---------- */
-  const plans = Store.get("sv_plans", DEFAULT_PLANS);
-  const user = Auth.current();
-  const currentPlan = user && user.role !== "admin" ? Subs.plan(user.email) : null;
-  $("planGrid").innerHTML = plans
-    .filter((p) => p.active)
-    .map((p, i) => `
-      <div class="plan-card ${i === 1 ? "plan-pop" : ""}">
-        ${i === 1 ? '<span class="plan-flag">MOST POPULAR</span>' : ""}
-        <h3>${p.name}</h3>
-        <p class="plan-price">${p.price}</p>
-        <ul>
-          <li>Unlimited browsing</li>
-          <li>${p.id === "basic" ? "HD (720p)" : p.id === "standard" ? "Full HD (1080p)" : "4K + HDR"}</li>
-          <li>${p.id === "premium" ? "4 screens" : p.id === "standard" ? "2 screens" : "1 screen"}</li>
-          <li>${p.id === "basic" ? "With ads" : "Ad-free"}</li>
-          <li>${p.id === "premium" ? "Downloads + parental controls" : "Parental controls"}</li>
-        </ul>
-        <button class="btn ${i === 1 ? "btn-primary" : "btn-ghost"} plan-btn" data-plan="${p.name}">
-          ${!user ? "Sign up" : currentPlan === p.name ? "✓ Current plan" : "Subscribe"}
-        </button>
-      </div>`)
-    .join("");
+  function renderPlans() {
+    const plans = Store.get("sv_plans", DEFAULT_PLANS);
+    const user = Auth.current();
+    const currentPlan = user && user.role !== "admin" ? Subs.plan(user.email) : null;
+    $("planGrid").innerHTML = plans
+      .filter((p) => p.active)
+      .map((p, i) => `
+        <div class="plan-card ${i === 1 ? "plan-pop" : ""}">
+          ${i === 1 ? '<span class="plan-flag">MOST POPULAR</span>' : ""}
+          <h3>${p.name}</h3>
+          <p class="plan-price">${p.price}</p>
+          <ul>
+            <li>Unlimited browsing</li>
+            <li>${p.id === "basic" ? "HD (720p)" : p.id === "standard" ? "Full HD (1080p)" : "4K + HDR"}</li>
+            <li>${p.id === "premium" ? "4 screens" : p.id === "standard" ? "2 screens" : "1 screen"}</li>
+            <li>${p.id === "basic" ? "With ads" : "Ad-free"}</li>
+            <li>${p.id === "premium" ? "Downloads + parental controls" : "Parental controls"}</li>
+          </ul>
+          <button class="btn ${i === 1 ? "btn-primary" : "btn-ghost"} plan-btn" data-plan="${p.name}">
+            ${!user ? "Sign up" : currentPlan === p.name ? "✓ Current plan" : "Subscribe"}
+          </button>
+        </div>`)
+      .join("");
+  }
+  renderPlans();
+  // Logging in / signing up changes which plan is current
+  window.addEventListener("svauthchange", renderPlans);
 
   $("planGrid").addEventListener("click", (e) => {
     const btn = e.target.closest(".plan-btn");
@@ -167,8 +174,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     Subs.activate(u.email, btn.dataset.plan);
     showToast(`Subscribed to ${btn.dataset.plan} plan 🎉`);
-    $("planGrid").querySelectorAll(".plan-btn").forEach((b) => {
-      b.textContent = b.dataset.plan === btn.dataset.plan ? "✓ Current plan" : "Subscribe";
-    });
+    renderPlans();
   });
 });

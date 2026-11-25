@@ -7,8 +7,42 @@
 document.addEventListener("DOMContentLoaded", () => {
   const $ = (id) => document.getElementById(id);
 
+  /* ---------- Creator gate: viewers and admins have no upload access ---------- */
+  if (!isCreator()) {
+    const main = document.querySelector("main");
+    if (main) {
+      const role = Auth.current() ? Auth.current().role : "a guest";
+      main.innerHTML = `
+        <section class="section">
+          <div class="panel">
+            <h2>🎬 Creator access only</h2>
+            <p class="muted">Uploading videos is available to content creator accounts.
+            You are signed in as <strong>${role}</strong>.</p>
+            <div class="panel-actions">
+              <a class="btn btn-primary" href="index.html">Browse videos</a>
+              <button class="btn btn-ghost" id="switchAccount">Sign out &amp; switch account</button>
+            </div>
+            <div class="hint-box">💡 Demo creator: <strong>creator@streamvibe.com / demo123</strong></div>
+          </div>
+        </section>`;
+      const switchBtn = $("switchAccount");
+      if (switchBtn) switchBtn.addEventListener("click", () => {
+        Auth.logout();
+        location.href = "upload.html";
+      });
+    }
+    return;
+  }
+
   const uploads = () => Store.get("sv_uploads", []);
   const saveUploads = (list) => Store.set("sv_uploads", list);
+
+  const FORM_ERROR = "Please fill in all required fields — and pick a video file or paste a URL.";
+  function showFormError(msg) {
+    const el = $("formError");
+    el.textContent = msg || FORM_ERROR;   // never reuse a previous, unrelated error
+    el.hidden = false;
+  }
 
   /* =========================================================
      MEDIA PICKER - click, browse or drag & drop
@@ -57,6 +91,13 @@ document.addEventListener("DOMContentLoaded", () => {
   $("pickFile").addEventListener("click", () => $("fFile").click());
   $("fFile").addEventListener("change", (e) => setMediaFile(e.target.files[0]));
   $("clearFile").addEventListener("click", clearMediaFile);
+
+  // The Reset button must also drop the picked video / thumbnail
+  $("uploadForm").addEventListener("reset", () => {
+    clearMediaFile();
+    selectedThumbFile = null;
+    $("formError").hidden = true;
+  });
 
   const drop = $("fileDrop");
   ["dragenter", "dragover"].forEach((ev) =>
@@ -116,11 +157,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const isLive = $("fLive").checked;
 
     if (!title || !desc || !category || !genre || !year) {
-      $("formError").hidden = false;
+      showFormError();
       return;
     }
     if (!selectedFile && !url) {
-      $("formError").hidden = false;
+      showFormError();
       return;
     }
     $("formError").hidden = true;
@@ -149,8 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selectedFile) {
       const res = await MediaStore.put(id, selectedFile);
       if (!res.ok) {
-        $("formError").textContent = res.msg;
-        $("formError").hidden = false;
+        showFormError(res.msg);
         return;
       }
       hasMedia = true;
@@ -163,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
       thumb,
       src,
       hasMedia,
-      hls: !hasMedia && (isLive || url.endsWith(".m3u8")),
+      hls: !hasMedia && (isLive || /\.m3u8(\?|#|$)/i.test(url)),
       isLive,
       isNew: true,
       trending: false,
@@ -181,11 +221,14 @@ document.addEventListener("DOMContentLoaded", () => {
     extra.unshift(video);
     Store.set("sv_extra_videos", extra);
 
-    e.target.reset();
-    $("fYear").value = 2026;
-    clearMediaFile();
-    selectedThumbFile = null;
+    // Ask for durable storage now, while we're inside a user gesture
+    const persisted = await requestPersistentStorage();
+
+    e.target.reset();   // reset handler clears the picked file and preview
     renderUploads();
+    if (persisted === false) {
+      showToast("Saved locally — allow persistent storage to keep it safe");
+    }
     showToast(hasMedia
       ? "Video stored in your browser and submitted for review ✓"
       : "Video submitted for review ✓");
